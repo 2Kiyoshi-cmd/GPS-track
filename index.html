@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>📍 Kiyoshi's Live GPS Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: #0e0d1a;
+      color: #00f7ff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+      color: #00f7ff;
+      text-shadow: 0 0 8px #00f7ff;
+    }
+    #location {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    #map {
+      height: 400px;
+      width: 90%;
+      margin: 20px auto;
+      border: 2px solid #00f7ff;
+      border-radius: 12px;
+    }
+    #address {
+      font-size: 16px;
+      color: #aaa;
+      margin-top: 8px;
+    }
+    .toggle-btn {
+      background: #00f7ff;
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      margin-top: 10px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+</head>
+<body>
+  <h1>📍 Kiyoshi's Live GPS Tracker</h1>
+  <div id="location">Getting location...</div>
+  <button class="toggle-btn" onclick="toggleMapType()">Toggle Map Type</button>
+  <div id="map"></div>
+  <div id="address">Fetching address...</div>
+
+  <script>
+    let map, marker, streetLayer, satelliteLayer;
+    let usingSatellite = false;
+
+    function toggleMapType() {
+      if (usingSatellite) {
+        map.removeLayer(satelliteLayer);
+        map.addLayer(streetLayer);
+      } else {
+        map.removeLayer(streetLayer);
+        map.addLayer(satelliteLayer);
+      }
+      usingSatellite = !usingSatellite;
+    }
+
+    function initMap(lat, lon) {
+      map = L.map('map').setView([lat, lon], 16);
+
+      streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      });
+
+      satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      });
+
+      streetLayer.addTo(map);
+      marker = L.marker([lat, lon]).addTo(map);
+    }
+
+    function updateMap(lat, lon, acc) {
+      document.getElementById("location").textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lon.toFixed(6)} | Accuracy: ±${acc.toFixed(2)} meters`;
+      if (!map) {
+        initMap(lat, lon);
+      } else {
+        map.setView([lat, lon], 16);
+        marker.setLatLng([lat, lon]);
+      }
+
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("address").textContent = data.display_name || "Address not found.";
+        }).catch(() => {
+          document.getElementById("address").textContent = "Failed to get address.";
+        });
+    }
+
+    function error(err) {
+      document.getElementById("location").textContent = `Error: ${err.message}`;
+    }
+
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        const crd = pos.coords;
+        updateMap(crd.latitude, crd.longitude, crd.accuracy);
+      },
+      error,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000
+      }
+    );
+  </script>
+</body>
+</html>
