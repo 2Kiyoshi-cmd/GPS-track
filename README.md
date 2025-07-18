@@ -1,6 +1,6 @@
-# 📍 Will's Personal GPS Tracker
+# GPS-TRACKER
 
-A native Android GPS app built with Kivy that tracks real-time location with speed, accuracy, and altitude.
+A website that tracks real-time location with speed, accuracy, and altitude.
 
 ## 🚀 Features
 
@@ -38,5 +38,4 @@ A native Android GPS app built with Kivy that tracks real-time location with spe
 
 ---
 
-> Made by [Kiyoshi (a.k.a. William)] 🔥  
-> "GRAVITY = A SUGGESTION, VELOCITY = ME"
+> Made by [Kiyoshi (a.k.a. William)] 
